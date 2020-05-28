@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Mozilla L10n Sync &#8212; Mozilla L10n Sync  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="mozilla-l10n-sync">
+<h1>Mozilla L10n Sync<a class="headerlink" href="#mozilla-l10n-sync" title="Permalink to this headline">¶</a></h1>
+<p>This document details how to tools should interact with repositories holding
+Mozilla localization data.</p>
+</div>
+<div class="section" id="bi-directional-sync">
+<h1>Bi-directional Sync<a class="headerlink" href="#bi-directional-sync" title="Permalink to this headline">¶</a></h1>
+<p>With frequent changes on the upstream repository for refactorings and
+technical intervention, it’s important to allow for bi-directional sync
+between L10n tools and repositories. The algorithm described below is
+one approach, the goals are clearly defined, though.</p>
+<div class="section" id="goals">
+<h2>Goals<a class="headerlink" href="#goals" title="Permalink to this headline">¶</a></h2>
+<p>The key goal is to allow technical interaction with the localization files
+without disturbing the localization workflow.</p>
+<ul class="simple">
+<li><p>Refactorings don’t create localization work unless required</p></li>
+<li><p>Migrations from legacy formats don’t create localization work</p></li>
+<li><p>In case of conflicts, the changes made in VCS take precedence over those in the workbench.</p></li>
+</ul>
+</div>
+<div class="section" id="algorithm">
+<h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The following algorithm is described in terms and processes of git version control
+graphs.</p>
+<div class="section" id="initial-state">
+<h3>Initial State<a class="headerlink" href="#initial-state" title="Permalink to this headline">¶</a></h3>
+<p>We’re starting off with a tree with the last sync on the 4th revision.</p>
+<div class="graphviz"><object data="_images/graphviz-286c3a77e3de345b626e737d9acf244b284d9323.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph DAG {
+graph [
+    size = &quot;1,3&quot;;
+];
+node [
+  shape = &quot;box&quot;
+];
+
+1 -&gt; 2;
+2 -&gt; 3;
+3 -&gt; &quot;last sync&quot;;
+}</p></object></div>
+<p>Then there’s one or more commits directly to the repository, by other tools or
+project managers.</p>
+<div class="graphviz"><object data="_images/graphviz-24a9ea71f405838f171794b291d045bda2951ef8.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph update {
+graph [
+    size = &quot;1,1.5&quot;;
+];
+node [
+  shape = &quot;box&quot;
+];
+&quot;last sync&quot; -&gt; &quot;master&quot;;
+}</p></object></div>
+</div>
+<div class="section" id="updating-references-phase">
+<h3>Updating References Phase<a class="headerlink" href="#updating-references-phase" title="Permalink to this headline">¶</a></h3>
+<p>Find differences between <code class="docutils literal notranslate"><span class="pre">last-sync</span></code> and <code class="docutils literal notranslate"><span class="pre">master</span></code> for the reference locale.
+Synchronise those difference back into the database, ensuring that</p>
+<ul class="simple">
+<li><p>removed reference strings are obsoleted in the database for all (affected) locales,</p></li>
+<li><p>changed reference strings are updated, without triggering localization workflows,</p></li>
+<li><p>new reference strings not yet added.</p></li>
+</ul>
+<p>This step prepares for the synchronization from the tool into the repository, and
+ensures that removed strings are removed from the localizations.</p>
+<p>This step also takes changes to the project configuration into account. Resources
+might be moved into the scope of a project, or the project might change scope
+by adding or removing resource locations, or by changing the set of exposed
+locales for a particular resource. The example in the <a class="reference external" href="https://moz-l10n-config.readthedocs.io/en/latest/examples.html">ProjectConfig</a> documentation
+details on how the config files impact resource and locale mappings.</p>
+</div>
+<div class="section" id="tool-repo-phase">
+<h3>Tool -&gt; Repo Phase<a class="headerlink" href="#tool-repo-phase" title="Permalink to this headline">¶</a></h3>
+<p>The first direction of the sync algorithm is to extract the data from the tool to
+version control. This is done by creating a commit on the  <code class="docutils literal notranslate"><span class="pre">last</span> <span class="pre">sync</span></code> branch.</p>
+<div class="graphviz"><object data="_images/graphviz-fc4684d6faf7a85596c1c6d0d53d02a79b8e4cff.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph update {
+graph [
+    size = &quot;2,1.5&quot;;
+];
+node [
+  shape = &quot;box&quot;
+];
+4 -&gt; &quot;master&quot;;
+4 -&gt; &quot;last sync&quot;;
+}</p></object></div>
+</div>
+<div class="section" id="rebase">
+<h3>Rebase<a class="headerlink" href="#rebase" title="Permalink to this headline">¶</a></h3>
+<p>The new commit is rebased on top of <code class="docutils literal notranslate"><span class="pre">master</span></code>, leaving a branch marker on the old
+commit.</p>
+<div class="graphviz"><object data="_images/graphviz-eefa4e035c9a139cc902f2843cae56a815c36bd1.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph update {
+graph [
+    size = &quot;2,2&quot;;
+];
+node [
+  shape = &quot;box&quot;
+];
+4 -&gt; &quot;master&quot; -&gt; &quot;last sync&quot;;
+4 -&gt; &quot;staging&quot;;
+}</p></object></div>
+</div>
+<div class="section" id="merge-push">
+<h3>Merge &amp; Push<a class="headerlink" href="#merge-push" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">last</span> <span class="pre">sync</span></code> is fast-forward merged into <code class="docutils literal notranslate"><span class="pre">master</span></code>, and both branches are pushed.</p>
+<p>If the push fails, for example due to new remote content, the sync is restarted.</p>
+</div>
+<div class="section" id="repo-tool-phase">
+<h3>Repo -&gt; Tool Phase<a class="headerlink" href="#repo-tool-phase" title="Permalink to this headline">¶</a></h3>
+<p>The differences between <code class="docutils literal notranslate"><span class="pre">staging</span></code> and <code class="docutils literal notranslate"><span class="pre">last</span> <span class="pre">sync</span></code> are pushed back to the
+tool’s database. This will have</p>
+<ul class="simple">
+<li><p>new content to translate in the reference locale,</p></li>
+<li><p>modifications to existing translations,</p></li>
+<li><p>and newly submitted translations.</p></li>
+</ul>
+</div>
+<div class="section" id="clean-up">
+<h3>Clean up<a class="headerlink" href="#clean-up" title="Permalink to this headline">¶</a></h3>
+<p>At this point, the local <code class="docutils literal notranslate"><span class="pre">staging</span></code> branch is deleted.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Axel Hecht.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
