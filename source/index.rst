@@ -95,6 +95,8 @@ version control. This is done by creating a commit on the  ``last sync`` branch.
    4 -> "master";
    4 -> "last sync";
 
+Untranslated strings in monolingual file formats are not written at all.
+
 Rebase
 ^^^^^^
 
@@ -112,6 +114,17 @@ commit.
    4 -> "master" -> "last sync";
    4 -> "staging";
 
+The important part here is how to handle conflicts between both branches.
+
+3-way Merge Tool
+^^^^^^^^^^^^^^^^
+
+Using built-in 3-way merge tools is dangerous for l10n formats, thus it's recommended
+to use a tool that understands the relevant file formats.
+
+In the case of conflicts, the recommended practice is to pick the variant in VCS. This
+includes removal of strings, in particular in monolingual file formats.
+
 Merge & Push
 ^^^^^^^^^^^^
 
@@ -128,6 +141,12 @@ tool's database. This will have
 * new content to translate in the reference locale,
 * modifications to existing translations,
 * and newly submitted translations.
+
+In the case of a removal of a string in VCS the conflict needs to be resolved,
+either by writing the string in the tool to VCS, or by taking the appropriate
+action in the tool to represent a translation under review.
+
+The recommended action is TBD.
 
 Clean up
 ^^^^^^^^
