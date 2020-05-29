@@ -32,29 +32,29 @@
             
   <div class="section" id="mozilla-l10n-sync">
 <h1>Mozilla L10n Sync<a class="headerlink" href="#mozilla-l10n-sync" title="Permalink to this headline">¶</a></h1>
-<p>This document details how to tools should interact with repositories holding
+<p>This document details how tools should interact with repositories holding
 Mozilla localization data.</p>
 </div>
 <div class="section" id="bi-directional-sync">
 <h1>Bi-directional Sync<a class="headerlink" href="#bi-directional-sync" title="Permalink to this headline">¶</a></h1>
-<p>With frequent changes on the upstream repository for refactorings and
-technical intervention, it’s important to allow for bi-directional sync
-between L10n tools and repositories. The algorithm described below is
-one approach, the goals are clearly defined, though.</p>
+<p>With frequent changes on the upstream repository for refactorings and technical
+interventions, it’s important to allow for bi-directional sync between L10n
+tools and repositories. While the algorithm below only describes one approach,
+the goals are clearly defined.</p>
 <div class="section" id="goals">
 <h2>Goals<a class="headerlink" href="#goals" title="Permalink to this headline">¶</a></h2>
 <p>The key goal is to allow technical interaction with the localization files
 without disturbing the localization workflow.</p>
 <ul class="simple">
-<li><p>Refactorings don’t create localization work unless required</p></li>
-<li><p>Migrations from legacy formats don’t create localization work</p></li>
+<li><p>Refactorings don’t create localization work unless required.</p></li>
+<li><p>Migrations from legacy formats don’t create localization work.</p></li>
 <li><p>In case of conflicts, the changes made in VCS take precedence over those in the workbench.</p></li>
 </ul>
 </div>
 <div class="section" id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
-<p>The following algorithm is described in terms and processes of git version control
-graphs.</p>
+<p>The following algorithm is described in terms and processes of Git version
+control graphs.</p>
 <div class="section" id="initial-state">
 <h3>Initial State<a class="headerlink" href="#initial-state" title="Permalink to this headline">¶</a></h3>
 <p>We’re starting off with a tree with the last sync on the 4th revision.</p>
@@ -87,7 +87,7 @@ node [
 <div class="section" id="updating-references-phase">
 <h3>Updating References Phase<a class="headerlink" href="#updating-references-phase" title="Permalink to this headline">¶</a></h3>
 <p>Find differences between <code class="docutils literal notranslate"><span class="pre">last-sync</span></code> and <code class="docutils literal notranslate"><span class="pre">master</span></code> for the reference locale.
-Synchronise those difference back into the database, ensuring that</p>
+Synchronise those difference back into the database, ensuring that:</p>
 <ul class="simple">
 <li><p>removed reference strings are obsoleted in the database for all (affected) locales,</p></li>
 <li><p>changed reference strings are updated, without triggering localization workflows,</p></li>
@@ -99,12 +99,12 @@ ensures that removed strings are removed from the localizations.</p>
 might be moved into the scope of a project, or the project might change scope
 by adding or removing resource locations, or by changing the set of exposed
 locales for a particular resource. The example in the <a class="reference external" href="https://moz-l10n-config.readthedocs.io/en/latest/examples.html">ProjectConfig</a> documentation
-details on how the config files impact resource and locale mappings.</p>
+details how the config files impact resource and locale mappings.</p>
 </div>
 <div class="section" id="tool-repo-phase">
 <h3>Tool -&gt; Repo Phase<a class="headerlink" href="#tool-repo-phase" title="Permalink to this headline">¶</a></h3>
 <p>The first direction of the sync algorithm is to extract the data from the tool to
-version control. This is done by creating a commit on the  <code class="docutils literal notranslate"><span class="pre">last</span> <span class="pre">sync</span></code> branch.</p>
+version control. This is done by creating a commit on the <code class="docutils literal notranslate"><span class="pre">last</span> <span class="pre">sync</span></code> branch.</p>
 <div class="graphviz"><object data="_images/graphviz-fc4684d6faf7a85596c1c6d0d53d02a79b8e4cff.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph update {
 graph [
@@ -156,13 +156,14 @@ tool’s database. This will have</p>
 <li><p>modifications to existing translations,</p></li>
 <li><p>and newly submitted translations.</p></li>
 </ul>
-<p>In the case of a removal of a string in VCS the conflict needs to be resolved,
+<p>In the case of removal of a string in VCS the conflict needs to be resolved,
 either by writing the string in the tool to VCS, or by taking the appropriate
 action in the tool to represent a translation under review.</p>
-<p>The recommended action is TBD.</p>
+<p>The recommended action is to keep the translation removed in VCS and for it to
+be under review in the tool.</p>
 </div>
 <div class="section" id="clean-up">
-<h3>Clean up<a class="headerlink" href="#clean-up" title="Permalink to this headline">¶</a></h3>
+<h3>Clean-up<a class="headerlink" href="#clean-up" title="Permalink to this headline">¶</a></h3>
 <p>At this point, the local <code class="docutils literal notranslate"><span class="pre">staging</span></code> branch is deleted.</p>
 </div>
 </div>

@@ -146,7 +146,8 @@ In the case of removal of a string in VCS the conflict needs to be resolved,
 either by writing the string in the tool to VCS, or by taking the appropriate
 action in the tool to represent a translation under review.
 
-The recommended action is TBD.
+The recommended action is to keep the translation removed in VCS and for it to
+be under review in the tool.
 
 Clean-up
 ^^^^^^^^
